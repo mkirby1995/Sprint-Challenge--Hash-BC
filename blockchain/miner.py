@@ -8,6 +8,7 @@ from uuid import uuid4
 from timeit import default_timer as timer
 
 import random
+import threading
 
 
 def proof_of_work(last_proof):
@@ -23,10 +24,10 @@ def proof_of_work(last_proof):
     start = timer()
 
     print("Searching for next proof")
-    proof = random.randint(-10000000, 10000000)
+    proof = random.randint(0, 1000000)
 
     while valid_proof(last_proof, proof) != True:
-        proof += 1
+        proof += random.randint(0, 10)
 
     print("Proof found: " + str(proof) + " in " + str(timer() - start))
     return proof
@@ -42,7 +43,7 @@ def valid_proof(last_hash, proof):
     """
 
     guess = hashlib.sha256(str(proof).encode()).hexdigest()
-
+    #print(guess[:6], str(last_hash)[-6:])
     return guess[:6] == str(last_hash)[-6:]
 
 
@@ -53,8 +54,6 @@ if __name__ == '__main__':
     else:
         node = "https://lambda-coin.herokuapp.com/api"
 
-    coins_mined = 0
-
     # Load or create ID
     f = open("my_id.txt", "r")
     id = f.read()
@@ -64,7 +63,7 @@ if __name__ == '__main__':
     if id == 'NONAME\n':
         print("ERROR: You must change your name in `my_id.txt`!")
         exit()
-    # Run forever until interrupted
+
     while True:
         # Get the last proof from the server
         r = requests.get(url=node + "/last_proof")
